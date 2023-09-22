@@ -1,0 +1,124 @@
+PROJECT-I
+AWS CodePipeline
+
+
+	
+Step-1: Create a CodeCommit repository
+	To create a codecommit repository goto AWS console and navigate to CodeCommit.
+ 
+	Now click on Create repository.
+ 
+	Give repository name and click on Create.
+  
+Step 2: Add sample code to CodeCommit repository.
+	Download the zip file from https://docs.aws.amazon.com/codepipeline/latest/userguide/samples/SampleApp_Linux.zip
+ 
+	Now create a empty folder c:\temp\MyDemoRepo.
+ 
+	Extract the file into above created folder.
+ 
+
+	In demo-repo click on Add file and click on Create file.
+ 
+	Paste the file contents into the new file which created in repository.
+ 
+	We have  to create the file under a folder so that’s why we give the name of the file as script/install_dependencies and Author name , Email address and click on Commit changes.
+ 
+	Do the same process to the all the files. Goto the created repository and goto folder, click on Add file and Create file. 
+ 
+	Paste the file content.
+ 
+	Give file name and Author name and Email address and click on Commit changes.
+ 
+
+	Same now goto the repository and goto folder and click Add file and Create file.
+ 
+	Paste the file content.
+ 
+	Name the file and give Author name and Email address and click on Commit changes.
+ 
+
+	Same as above now we create file in the repository. Now click on Add file and Create file.
+ 
+	Paste the file content.
+ 
+	Give the file name, Author name, Email address and click on Commit changes.
+ 
+
+	Click on Add file and Create file.
+ 
+	Paste the file content.
+ 
+	Give the file name, Author name, Email address and click on Commit changes.
+ 
+
+	Click on Add file and Create file.
+ 
+	Paste the file content.
+ 
+	Give a file name, Author name, Email address and click on Commit changes.
+ 
+
+
+Step 3: Create an Amazon EC2 Linux instance and install the CodeDeploy agent
+	To create a instance we have to create a role for codedeploy agent.
+	So, now navigate to IAM and goto roles and click on Create role.
+ 
+	Select AWS service, under use case select EC2 and click on Next.
+ 
+	In Add permissions select AmazonEC2RoleforAWSCodeDeploy and AmazonSSMManagedInstanceCore and click on Next.
+ 
+	Give a Role name and  click on Create role.
+ 
+	To launch an instance click on Launch instance and give a name. 
+ 
+	Select linux AMI, t2.micro, proceed without key, create new security group, in advance settings select IAM instance profile ec2-instance-role and click on Launch instance
+ 
+Step 4: Create an application in CodeDeploy
+	First create a role that allows CodeDeploy to perform deployments.
+	Navigate to IAM and goto roles and click on Create role.
+ 
+	Select AWS service and uder Use case select CodeDeploy and click on Next.
+ 
+	In Add permissions AWSCodeDeployRole is attached and click on Next.
+ 
+	Now click on Create role.
+ 
+	Now navigate to AWS CodeDeploy and click on Create application.
+ 
+
+	Give Application name and select EC2/On-premises and click on Create application.
+ 
+	Now click on Create deployment group.
+ 
+	Give group name, select codedeployrole and select In-place.
+ 
+	Select EC2 instances, give key as Name and value as instance-name.
+ 
+	In Deployment settings select CodeDeployDefault.OneAtATime.
+ 
+	Select Now and schedule updates and click on Create.
+ 
+Step 5: Create your first pipeline in CodePipeline.
+	Navigate to CodePipeline and click on Create pipeline.
+ 
+	Give pipeline name, select New service role and click on Next.
+ 
+	Select Source provider as AWS CodeCommit, repository name as demo-repo, Branch as Main.
+ 
+	In Add build stage click on Skip build stage.
+ 
+	Select deploy provider as AWS CodeDeploy, application name as demo-application, deployment group as demo-deploymentgroup and click on Next.
+ 
+	Now click on Create pipeline.
+ 
+
+	Pipeline was successfully created. Source is in 'in progress'.
+ 
+	After few minutes Source is 'Succeeded'.
+ 
+	In Deployment lifecycle events click on instance id, it navigate to EC2.
+ 
+
+	Paste the public ip of a instance in browser we can get a output.
+ 
