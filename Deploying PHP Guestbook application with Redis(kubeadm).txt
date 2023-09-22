@@ -1,0 +1,193 @@
+PROJECT- I
+Deploying PHP Guestbook application with Redis(kubeadm)
+
+
+
+
+
+
+Installing a kubeadm and set up the clusters
+
+	Firstly goto the aws console and navigate to ec2 instace.
+ 
+	Create 1 instace for master node with t2.midium in Ubuntu ami.
+ 
+	Create 2 instaces for worker nodes with t2.micro in Ubuntu ami.
+ 
+	Connect the 3 instances with using putty and switch to root user.      
+              
+	 In master node Set the hostname by using bellow command.
+•	hostnamectl set-hostname master
+•	exec bash
+ 
+	Create a directory  /etc/hosts and insert the bellow details.
+•	Privateip master
+•	Privateip worker1
+•	Privateip worker2
+ 
+
+
+
+
+	In worker nodes set  the hostname by using bellow command.
+•	hostnamectl set-hostname worker1 (for node-1)
+•	hostnamectl set-hostname worker2 (for node-2)
+•	Exec bash
+
+ 
+ 
+
+
+
+Follow the bellow steps in three nodes(master,worker1,worker2) to setup a kubeadm.
+
+
+	Update by using a command sudo apt-get update.
+ 
+	install packages which we have needed in further.
+•	sudo apt-get install -y apt-transport-https ca-certificates curl
+ 
+	now to install the containerd, for this we have to create its configuration file.
+•	curl -fsSLo containerd-config.toml \
+        https://gist.githubusercontent.com/oradwell/31ef858de3ca43addef68ff971f459c2/raw/5099df007eb717a11825c3890a0517892fa12dbf/containerd-config.toml
+ 
+	Create a directory  and move the configuration file.
+•	sudo mkdir /etc/containerd
+•	sudo mv containerd-config.toml /etc/containerd/config.toml
+ 
+	Install containerd from their official GitHub repository
+•	curl -fsSLo containerd-1.6.14-linux-amd64.tar.gz \
+        https://github.com/containerd/containerd/releases/download/v1.6.14/containerd-1.6.14-linux-amd64.tar.gz
+ 
+	extract the binaries from the containerd by using the bellow command.
+•	sudo tar Cxzvf /usr/local containerd-1.6.14-linux-amd64.tar.gz
+ 
+	Install containerd as a service by the commands,
+•	sudo curl -fsSLo /etc/systemd/system/containerd.service \
+        https://raw.githubusercontent.com/containerd/containerd/main/containerd.service
+•	sudo systemctl daemon-reload
+•	sudo systemctl enable --now containerd
+ 
+	Install runc by the commands,
+•	curl -fsSLo runc.amd64 \
+        https://github.com/opencontainers/runc/releases/download/v1.1.3/runc.amd64
+•	sudo install -m 755 runc.amd64 /usr/local/sbin/runc
+ 
+
+	Install CNI network plugins by using the bellow commands.
+•	curl -fsSLo cni-plugins-linux-amd64-v1.1.1.tgz \
+        https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz
+•	sudo mkdir -p /opt/cni/bin
+•	sudo tar Cxzvf /opt/cni/bin cni-plugins-linux-amd64-v1.1.1.tgz
+ 
+	Forward IPv4 and let iptables see bridged network traffic.
+•	cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+        overlay
+        br_netfilter
+        EOF
+•	sudo modprobe -a overlay br_netfilter
+ 
+	Sysctdl params persist across reboots
+•	cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+        net.bridge.bridge-nf-call-iptables  = 1
+        net.bridge.bridge-nf-call-ip6tables = 1
+        net.ipv4.ip_forward                 = 1
+        EOF
+ 
+	Apply sysctl params without reboot.
+•	sudo sysctl –system
+ 
+
+
+Install kubeadm, kubelet & kubectl
+
+	Add Kubernetes GPG key updated one.
+•	curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+ 
+	Add Kubernetes apt repository and fetch packages list.
+•	echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+•	sudo apt-get update
+•	sudo apt-get install -y kubelet kubeadm kubectl
+ 
+ 
+ 
+	Disable the swap feature completely.
+•	sudo swapoff –a
+•	sudo sed -i -e '/swap/d' /etc/fstab
+ 
+
+Now on the master node:
+
+	Create the cluster using kubeadm.
+•	kubeadm init
+ 
+	To access the cluster, we have to configure kubectl.
+•	mkdir -p $HOME/.kube
+•	sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+•	sudo chown $(id -u):$(id -g) $HOME/.kube/config
+ 
+	Apply weave CNI (Container Network Interface) as shown below,
+•	kubectl apply -f https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonset-k8s.yaml
+ 
+On the worker nodes:
+
+	Run the token to join to the master,which generated at end of creation of cluster.
+•	kubeadm join 172.31.35.172:6443 --token id4urx.f4cujlzwndb1n3yj \
+        --discovery-token-ca-cert-hash sha256:aebb376b48845da74223e1ce0e23f290b9147fe4671788799920f55585c4f901
+ 
+ 
+On the master:
+
+	Run the command kubectl get nodes.
+ 
+
+ 
+Deploying PHP Guestbook application
+
+On the masternode
+
+	Create a directory /application/guestbook.
+ 
+	Create a file redis-leader-deployment.yaml and write a yaml file.
+
+	Apply the file .
+ 
+	Check wether pod created or not.
+
+ 
+	Now create a service named redis-leader-service.yaml
+
+	Apply the file.
+ 
+	Check wether service created or not.
+ 
+	Create a redis follower deployment file redis-follower-deployment.yaml.
+ 
+
+	Apply the file.
+ 
+	Check pods created or not.
+ 
+	Create a redis follower service by creating a file redis-follower-service.yaml
+ 
+	Apply the file.
+ 
+	Check wether service created or not.
+
+ 
+	Create a frontend deployment.
+ 
+	Apply the file.
+ 
+	Check wether pods created or not.
+
+ 
+	Create a frontend service by using file frontend-service.yaml.
+
+	Apply the file.
+ 
+	Check wether service created or not.
+ 
+	Now by using public ip and port number we can access the guestbook.
+ 
+	We can see the same in the worker by using a worker ip and port.
