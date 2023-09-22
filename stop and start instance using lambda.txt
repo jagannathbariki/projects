@@ -1,0 +1,102 @@
+PROJECT - III
+How do I stop and start Amazon EC2 instances at regular intervals using Lambda
+	
+ 
+By using Lambda stop and start EC2 instances at regular intervals
+
+	Goto AWS management console and navigate to ec2 and create one instance.
+
+ 
+Step-1: Create a custom AWS Identity and Access Management (IAM) policy and execution role for your Lambda function.
+
+	Now navigate to IAM, and goto roles, click on Create role.
+ 
+	Select AWS service and Lambda, click on Next.
+ 
+	Click on Create policy.
+ 
+	Select json and give json code for stop and start instance.
+ 
+	Give a policy name and click on Create.
+ 
+	Select a created role and click on Next.
+ 
+	Give a role name and click on Create role.
+
+ 
+Step-2: Create Lambda functions that stop and start your EC2 instances.
+
+	In search bar give Lambda and select Lambda.
+ 
+
+	Create a function for stop instance. Click on Create a function.
+ 
+	select Author from scratch and give a function name.
+ 
+	Select the role which we created and click on Crate function.
+ 
+	Write a function code to stop instance.
+ 
+	Select Configuration and click on edit.
+ 
+	Change timeout sec to 10 sec and click on Create.
+ 
+	Now create a function for start a instance.
+ 
+	Select a created role and click on Create function.
+ 
+	Write a code for a start an instance.
+ 
+
+Step-3: Test your Lambda functions.
+
+	now can check the start function, click on start-function 
+ 
+	Click on Deploy and Test, we can see the output.
+ 
+	we can see the instance will be running state.
+ 
+	Now select stop-function.
+ 
+	Click on Deploy and Test, we can see the output.
+ 
+	We check a instance, it will be the stopped state.
+
+ 
+Step-4: Create EventBridge rules that run your function on a schedule.
+
+	Now navigate to Amazon EventBridge and click on Create rule.
+ 
+	Now create a rule for stop-function, give a rule name as stop-rule and provide description.
+
+	In the Rule type select Schedule and click on Continue in EventBridge Scheduler.
+ 
+	Select Recurring schedule and Crone-based schedule and give Cron expression.
+ 
+	Select Templated targets and select Lambda.
+ 
+	Select stop-function and choose Skip to review and create.
+ 
+	Now click on Create schedule.
+ 
+	We can see that schedule is being created.
+ 
+	Now create a schedule for start-function, click on Create rule.
+ 
+	Give a rule name and description.
+ 
+	Select Schedule and click on Continue in EventBridge Scheduler.
+ 
+	Select Recurring schedule and Cron-based schedule click on Next.
+ 
+	Select Templated targets and select Lambda.
+ 
+	Select start-function and choose Skip to review and create.
+ 
+	Click on Create schedule.
+ 
+	Now we can see that schedule start-rule is being crated.
+ 
+	After specified time we can see that, instance is automatically comes to running status.
+ 
+	After specified time, scheduler automatically stopped a instance.
